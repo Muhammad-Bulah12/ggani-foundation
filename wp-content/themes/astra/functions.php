@@ -240,8 +240,104 @@ add_action('template_redirect', function() {
     ob_start(function($buffer) {
         $donateUrl = 'https://www.zeffy.com/en-US/donation-form/donate-to-make-a-difference-21491';
 
+        // Inject polished Header & Hero layout styles before </head>
+        $headerStyles = '<style id="ggani-header-enhancement-css">
+            @media (min-width: 922px) {
+                #ast-desktop-header .ast-primary-header-bar {
+                    min-height: 78px !important;
+                    padding-top: 8px !important;
+                    padding-bottom: 8px !important;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+                    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.04) !important;
+                }
+                #ast-desktop-header .site-primary-header-wrap.ast-container {
+                    max-width: 1280px !important;
+                    padding-left: 28px !important;
+                    padding-right: 28px !important;
+                }
+                #ast-desktop-header .ast-builder-grid-row {
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: space-between !important;
+                    flex-wrap: nowrap !important;
+                    gap: 24px !important;
+                }
+                #ast-desktop-header .site-header-primary-section-left {
+                    flex: 0 0 auto !important;
+                }
+                #ast-desktop-header .site-title {
+                    font-size: 1.45rem !important;
+                    white-space: nowrap !important;
+                    line-height: 1.2 !important;
+                    margin: 0 !important;
+                }
+                #ast-desktop-header .site-header-primary-section-right {
+                    flex: 1 1 auto !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: flex-end !important;
+                    flex-wrap: nowrap !important;
+                    gap: 12px !important;
+                }
+                #ast-desktop-header .ast-builder-menu-1 {
+                    margin-right: 6px !important;
+                }
+                #ast-desktop-header #ast-hf-menu-1 {
+                    display: flex !important;
+                    flex-wrap: nowrap !important;
+                    align-items: center !important;
+                    gap: 2px !important;
+                }
+                #ast-desktop-header #ast-hf-menu-1 > .menu-item > .menu-link {
+                    white-space: nowrap !important;
+                    padding: 8px 14px !important;
+                    line-height: 1.4 !important;
+                    font-size: 15.5px !important;
+                    font-weight: 600 !important;
+                }
+                #ast-desktop-header .ast-header-button-1,
+                #ast-desktop-header .ast-header-button-donate {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    flex-shrink: 0 !important;
+                }
+                #ast-desktop-header .ast-builder-button-wrap .ast-custom-button {
+                    white-space: nowrap !important;
+                    padding: 10px 20px !important;
+                    font-size: 13.5px !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 0.4px !important;
+                    border-radius: 8px !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    gap: 6px !important;
+                    line-height: 1.2 !important;
+                    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+                }
+                #ast-desktop-header .ast-builder-button-wrap .ast-custom-button:hover {
+                    transform: translateY(-1px) !important;
+                }
+            }
+            .uagb-block-2a03356b .uagb-ifb-button-wrapper {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 14px !important;
+                flex-wrap: wrap !important;
+                margin-top: 12px !important;
+                margin-bottom: 24px !important;
+            }
+            .uagb-block-2a03356b .uagb-ifb-button-wrapper a.wp-block-button__link {
+                margin: 0 !important;
+                white-space: nowrap !important;
+                border-radius: 8px !important;
+            }
+        </style>';
+        $buffer = str_replace('</head>', $headerStyles . "\n</head>", $buffer);
+
         // 1. Desktop Header: Add "Donate" button alongside "Get Involved"
-        $headerDonateBtn = '<div class="ast-builder-layout-element ast-flex site-header-focus-item ast-header-button-donate" style="margin-left: 10px;"><div class="ast-builder-button-wrap"><a class="ast-custom-button-link" href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" role="button" aria-label="Donate"><div class="ast-custom-button" style="background-color: #377A00; border-color: #377A00; color: #ffffff; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(55, 122, 0, 0.25);">❤ Donate</div></a></div></div>';
+        $headerDonateBtn = '<div class="ast-builder-layout-element ast-flex site-header-focus-item ast-header-button-donate"><div class="ast-builder-button-wrap"><a class="ast-custom-button-link" href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" role="button" aria-label="Donate"><div class="ast-custom-button" style="background-color: #377A00; border-color: #377A00; color: #ffffff; box-shadow: 0 4px 12px rgba(55, 122, 0, 0.25);">❤ Donate</div></a></div></div>';
         $buffer = preg_replace(
             '/(<div class="ast-builder-layout-element[^>]*ast-header-button-1"[^>]*>.*?<\/div>\s*<\/div>)/s',
             '$1' . $headerDonateBtn,
@@ -255,7 +351,7 @@ add_action('template_redirect', function() {
         $buffer = preg_replace('/(<ul id="astra-footer-menu"[^>]*>.*?)<\/ul>/s', '$1' . $mobileDonateItem, $buffer, 1);
 
         // 3. Homepage Hero Section: Add "Donate Now" button beside "Get Involved"
-        $heroDonateBtn = '</a> <a href="' . $donateUrl . '" class="uagb-infobox-cta-link wp-block-button__link" target="_blank" rel="noopener noreferrer" style="margin-left: 12px; background-color: #ffffff; color: #012104; border-color: #ffffff;"><span class="uagb-inline-editing">❤ Donate Now</span></a>';
+        $heroDonateBtn = '</a> <a href="' . $donateUrl . '" class="uagb-infobox-cta-link wp-block-button__link" target="_blank" rel="noopener noreferrer" style="background-color: #ffffff; color: #012104; border-color: #ffffff;"><span class="uagb-inline-editing">❤ Donate Now</span></a>';
         $buffer = str_replace(
             '<span class="uagb-inline-editing">Get Involved</span></a>',
             '<span class="uagb-inline-editing">Get Involved</span>' . $heroDonateBtn,
