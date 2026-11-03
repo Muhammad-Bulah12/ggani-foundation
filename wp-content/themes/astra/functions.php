@@ -333,8 +333,22 @@ add_action('template_redirect', function() {
                 white-space: nowrap !important;
                 border-radius: 8px !important;
             }
+            .uagb-tm__image img.uagb-tm-img-src {
+                width: 56px !important;
+                height: 56px !important;
+                object-fit: cover !important;
+                border-radius: 50% !important;
+            }
         </style>';
         $buffer = str_replace('</head>', $headerStyles . "\n</head>", $buffer);
+
+        // Replace duplicate testimonial avatar image for Tom Carter with an Unsplash portrait
+        $tomUnsplashImg = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80';
+        $buffer = preg_replace(
+            '/(<img[^>]*src=")[^"]*black-girl-150x150\.jpg("[^>]*>\s*<\/div>\s*<\/div>\s*<div class="uagb-testimonial-details">\s*<span class="uagb-tm__author-name">Tom Carter<\/span>)/',
+            '${1}' . $tomUnsplashImg . '${2}',
+            $buffer
+        );
 
         // 1. Desktop Header: Add "Donate" button alongside "Get Involved"
         $headerDonateBtn = '<div class="ast-builder-layout-element ast-flex site-header-focus-item ast-header-button-donate"><div class="ast-builder-button-wrap"><a class="ast-custom-button-link" href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" role="button" aria-label="Donate"><div class="ast-custom-button" style="background-color: #377A00; border-color: #377A00; color: #ffffff; box-shadow: 0 4px 12px rgba(55, 122, 0, 0.25);">❤ Donate</div></a></div></div>';
