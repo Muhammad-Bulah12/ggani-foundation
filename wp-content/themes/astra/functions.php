@@ -234,18 +234,72 @@ add_action('astra_header_before', function() {
 });
 
 /**
- * Rewrite hardcoded local paths (/Ggani_Foundation) when running in production (e.g. Render)
+ * Ganiyu Adelekan Foundation - Global Zeffy Donation Buttons & Production URL Rewriting
  */
-if ( defined('DB_HOST') && DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1' ) {
-    add_action('template_redirect', function() {
-        ob_start(function($buffer) {
+add_action('template_redirect', function() {
+    ob_start(function($buffer) {
+        $donateUrl = 'https://www.zeffy.com/en-US/donation-form/donate-to-make-a-difference-21491';
+
+        // 1. Desktop Header: Add "Donate" button alongside "Get Involved"
+        $headerDonateBtn = '<div class="ast-builder-layout-element ast-flex site-header-focus-item ast-header-button-donate" style="margin-left: 10px;"><div class="ast-builder-button-wrap"><a class="ast-custom-button-link" href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" role="button" aria-label="Donate"><div class="ast-custom-button" style="background-color: #377A00; border-color: #377A00; color: #ffffff; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(55, 122, 0, 0.25);">❤ Donate</div></a></div></div>';
+        $buffer = preg_replace(
+            '/(<div class="ast-builder-layout-element[^>]*ast-header-button-1"[^>]*>.*?<\/div>\s*<\/div>)/s',
+            '$1' . $headerDonateBtn,
+            $buffer,
+            1
+        );
+
+        // 2. Mobile Menu & Footer Menu: Append "Donate" link
+        $mobileDonateItem = '<li class="menu-item"><a href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" class="menu-link" style="color: #377A00; font-weight: 700;">❤ Donate</a></li></ul>';
+        $buffer = preg_replace('/(<ul id="ast-hf-mobile-menu"[^>]*>.*?)<\/ul>/s', '$1' . $mobileDonateItem, $buffer, 1);
+        $buffer = preg_replace('/(<ul id="astra-footer-menu"[^>]*>.*?)<\/ul>/s', '$1' . $mobileDonateItem, $buffer, 1);
+
+        // 3. Homepage Hero Section: Add "Donate Now" button beside "Get Involved"
+        $heroDonateBtn = '</a> <a href="' . $donateUrl . '" class="uagb-infobox-cta-link wp-block-button__link" target="_blank" rel="noopener noreferrer" style="margin-left: 12px; background-color: #ffffff; color: #012104; border-color: #ffffff;"><span class="uagb-inline-editing">❤ Donate Now</span></a>';
+        $buffer = str_replace(
+            '<span class="uagb-inline-editing">Get Involved</span></a>',
+            '<span class="uagb-inline-editing">Get Involved</span>' . $heroDonateBtn,
+            $buffer
+        );
+
+        // 4. Global Above-Footer Call-To-Action: Add "Donate Now" button beside "Get Involved"
+        $footerCtaDonateBtn = 'Get Involved</a> <a href="' . $donateUrl . '" class="uagb-cta__button-link-wrapper wp-block-button__link" target="_blank" rel="noopener noreferrer" style="margin-left: 12px; background-color: #ffffff; color: #012104; border-color: #ffffff;">❤ Donate Now</a>';
+        $buffer = preg_replace(
+            '/Get Involved<\/a>(<\/div><\/div>\s*<\/div><\/div>\s*<\/section>)/',
+            $footerCtaDonateBtn . '$1',
+            $buffer
+        );
+
+        // 5. Programs Page ("Support & Donate") & Contact Page ("Get Involved & Donate Today")
+        $buffer = preg_replace(
+            '/<a href="[^"]*"([^>]*)>\s*<span>Support &amp; Donate<\/span>\s*<\/a>/',
+            '<a href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer"$1><span>❤ Support &amp; Donate</span></a>',
+            $buffer
+        );
+        $buffer = preg_replace(
+            '/<a href="[^"]*"([^>]*)>\s*<span>Get Involved &amp; Donate Today<\/span>/',
+            '<a href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer"$1><span>Get Involved &amp; Donate Today</span>',
+            $buffer
+        );
+
+        // 6. Gallery Page CTA Banner: Add "Donate Now" button alongside "Explore Programs"
+        $galleryDonateBtn = '<span>Explore Programs</span></a><a href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; padding: 15px 34px; background: #ffffff; color: #012104; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(0,0,0,0.2);"><span>❤ Donate Now</span></a>';
+        $buffer = preg_replace(
+            '/<span>Explore Programs<\/span>\s*<\/a>/',
+            $galleryDonateBtn,
+            $buffer
+        );
+
+        // 7. Rewrite hardcoded local paths (/Ggani_Foundation) when running in production (e.g. Render)
+        if ( defined('DB_HOST') && DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1' ) {
             $home = rtrim(home_url(), '/');
             $buffer = str_replace('http://localhost/Ggani_Foundation', $home, $buffer);
             $buffer = str_replace('https://localhost/Ggani_Foundation', $home, $buffer);
             $buffer = str_replace('/Ggani_Foundation/', '/', $buffer);
-            return $buffer;
-        });
+        }
+
+        return $buffer;
     });
-}
+});
 
 
