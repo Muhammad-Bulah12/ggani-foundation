@@ -4,12 +4,23 @@ session_start();
 // Database connection helper
 function get_db() {
     $host = getenv('DB_HOST') ?: 'localhost';
+    $port = 3306;
+    if (strpos($host, ':') !== false) {
+        list($host, $port) = explode(':', $host, 2);
+    }
     $name = getenv('DB_NAME') ?: 'hqqiksmy_WPEYD';
     $user = getenv('DB_USER') ?: 'root';
     $pass = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : '';
-    return new PDO("mysql:host={$host};dbname={$name}", $user, $pass, [
+    $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
+    ];
+    if ($host !== 'localhost' && $host !== '127.0.0.1') {
+        $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+        if (file_exists('/etc/ssl/certs/ca-certificates.crt')) {
+            $options[PDO::MYSQL_ATTR_SSL_CA] = '/etc/ssl/certs/ca-certificates.crt';
+        }
+    }
+    return new PDO("mysql:host={$host};port={$port};dbname={$name}", $user, $pass, $options);
 }
 
 // File paths

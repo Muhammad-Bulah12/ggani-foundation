@@ -30,6 +30,17 @@ define('DB_PASSWORD', getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : 
 
 /** Database hostname */
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+	$_SERVER['HTTPS'] = 'on';
+}
+if (DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1') {
+	define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);
+	if (isset($_SERVER['HTTP_HOST'])) {
+		$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+		define('WP_HOME', $protocol . $_SERVER['HTTP_HOST']);
+		define('WP_SITEURL', $protocol . $_SERVER['HTTP_HOST']);
+	}
+}
 
 /** Database charset to use in creating database tables. */
 define( 'DB_CHARSET', 'utf8' );
