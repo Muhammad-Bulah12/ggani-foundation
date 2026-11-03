@@ -1,0 +1,776 @@
+import {MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import cx from 'classnames';
+import {createPortal} from 'react-dom';
+import {useDispatch, useSelect} from '@wordpress/data';
+import {useCopyToClipboard} from '@wordpress/compose';
+import {store} from '@wordpress/core-data';
+import {__, sprintf} from '@wordpress/i18n';
+import {Button, Popover, RadioControl, SelectControl, Spinner, TabPanel, TextControl} from '@wordpress/components';
+import {PanelColorSettings} from '@wordpress/block-editor';
+import defaultColors from '@givewp/form-builder/settings/design/style-controls/color/defaultColors';
+import {external} from '@wordpress/icons';
+import getWindowData from '@givewp/form-builder/common/getWindowData';
+import {CheckIcon} from '@givewp/form-builder/components/icons';
+import {CopyIcon, ExitIcon} from '@givewp/components/AdminUI/Icons';
+import {Interweave} from 'interweave';
+import type {FormSettings} from '@givewp/form-builder/types/formSettings';
+
+import './styles.scss';
+
+interface EmbedFormModalProps {
+    handleClose: MouseEventHandler<HTMLButtonElement>;
+}
+
+type Post = {
+    value: string,
+    label: string,
+    content: string
+}
+
+interface StateProps {
+    posts: Array<Post>;
+    insertPostType: string;
+    createPostType: string;
+    currentPostType: string;
+    newPostName: string;
+    selectedPost: string;
+    selectedStyle: string;
+    openFormButton: string;
+    buttonColor: string;
+    isCopied: boolean;
+    isInserting: boolean;
+    insertPageNotSelected: boolean;
+    isCreating: boolean;
+    isInserted: boolean;
+    isCreated: boolean;
+    createdLink: string;
+    insertedLink: string;
+}
+
+/**
+ * @since 3.2.0
+ */
+export default function EmbedFormModal({handleClose}: EmbedFormModalProps) {
+
+    const {formId, externalEmbedScriptUrl, settings, campaignColors} = getWindowData();
+    const [isExternalEmbedCopied, setIsExternalEmbedCopied] = useState<boolean>(false);
+
+    const parsedSettings = useMemo((): Partial<FormSettings> => {
+        try {
+            return JSON.parse(settings);
+        } catch (error) {
+            console.error(error);
+
+            return {};
+        }
+    }, [settings]);
+
+    /**
+     * The color the launcher button starts with: the form's own primary color,
+     * campaign inheritance included. The form inside the iframe resolves its
+     * colors itself; this only seeds the button on the host page, and the
+     * admin can change it before copying.
+     *
+     * @since 4.17.0
+     */
+    const formPrimaryColor = useMemo((): string => {
+        const inherit = parsedSettings.inheritCampaignColors;
+
+        return (inherit && campaignColors?.primaryColor) || parsedSettings.primaryColor || '';
+    }, [parsedSettings, campaignColors]);
+
+    /**
+     * The confirmation page redirect sends donors to a page on this
+     * WordPress site after donating - which means leaving the site the form
+     * is embedded on, so the external tab warns about it.
+     *
+     * @since 4.17.0
+     */
+    const hasConfirmationRedirect = !!parsedSettings.enableReceiptConfirmationPage;
+
+    const newPostNameRef = useRef<HTMLInputElement>(null);
+    const openFormBtnRef = useRef<HTMLInputElement>(null);
+    const viewInsertedPageBtnRef = useRef<HTMLButtonElement>(null);
+    const viewCreatedPageBtnRef = useRef<HTMLButtonElement>(null);
+
+    const [state, setState] = useState<StateProps>({
+        posts: [],
+        insertPostType: 'page',
+        createPostType: 'page',
+        currentPostType: 'page',
+        newPostName: '',
+        selectedPost: '',
+        selectedStyle: 'onpage',
+        openFormButton: '',
+        buttonColor: '',
+        isCopied: false,
+        isInserting: false,
+        insertPageNotSelected: false,
+        isCreating: false,
+        isInserted: false,
+        isCreated: false,
+        createdLink: null,
+        insertedLink: null,
+    });
+
+    const {editEntityRecord, saveEditedEntityRecord, saveEntityRecord} = useDispatch(store);
+
+    const closeModal = useCallback(e => {
+        if (e.keyCode === 27) {
+            handleClose(e);
+        }
+    }, []);
+
+    useEffect(() => {
+        document.addEventListener('keydown', closeModal, false);
+        return () => document.removeEventListener('keydown', closeModal, false);
+    }, []);
+
+    const postOptions = [
+        {label: __('Page', 'give'), value: 'page'},
+        {label: __('Post', 'give'), value: 'post'},
+    ];
+
+    const displayStyles = [
+        {
+            label: __('Full form', 'give'),
+            value: 'onpage',
+            description: __('All fields are visible on one page with the donate button at the bottom', 'give'),
+        },
+        {
+            label: __('Modal', 'give'),
+            value: 'modal',
+            description: __('Only a button is visible; clicking it opens the form in a modal window', 'give'),
+        },
+        {
+            label: __('New Tab', 'give'),
+            value: 'newTab',
+            description: __('Only a button is visible; clicking it opens the form in a new window', 'give'),
+        },
+    ];
+
+    // Fetch posts/pages
+    const isLoadingPages = useSelect((select) => {
+        const filtered: Array<Post> = [];
+        // @ts-ignore
+        const data = select(store).getEntityRecords('postType', state.currentPostType, {
+            status: ['publish', 'draft'],
+            per_page: -1, // do we want this?
+        });
+
+        if (data) {
+            data?.forEach(page => {
+                filtered.push({
+                    value: page.id,
+                    label: page.title.raw || __('(no title)', 'give'),
+                    content: page.content.raw
+                });
+            });
+
+            // Adding this to state so that we have both posts and pages available
+            // This is needed for post/page exist check
+            setState(prevState => {
+                return {
+                    ...prevState,
+                    isInserting: false,
+                    posts: {
+                        ...prevState.posts,
+                        [state.currentPostType]: filtered,
+                    },
+                };
+            });
+        }
+
+        return !data;
+
+    }, [state.createPostType, state.insertPostType]);
+
+    /**
+     * Check if page is already created
+     * Works for posts and pages
+     */
+    const isPageAlreadyCreated = !state.isCreated && state.newPostName
+        && state.posts[state.createPostType]?.filter(post => post.label == state.newPostName).length > 0;
+
+    const isButton = ['newTab', 'modal'].includes(state.selectedStyle);
+
+    /**
+     * Get site posts/pages for select option
+     */
+    const getPostsList = useCallback(() => {
+        const pages = [];
+
+        if (isLoadingPages) {
+            pages.push({value: '', label: __('Loading...', 'give'), disabled: true});
+        } else {
+            const label = 'page' === state.insertPostType
+                ? __('Select a page', 'give')
+                : __('Select a post', 'give');
+
+            pages.push({value: '', label, disabled: true});
+        }
+
+        if (state.posts[state.insertPostType]) {
+            pages.push(...state.posts[state.insertPostType]);
+        }
+
+        return pages;
+    }, [state.posts, isLoadingPages]);
+
+    const getStyleDescription = () => displayStyles.find(style => style.value === state.selectedStyle).description;
+
+    const getBlockComment = () => {
+
+        const attributes = {
+            id: formId
+        }
+
+        if (isButton) {
+            attributes['displayStyle'] = state.selectedStyle;
+            attributes['continueButtonTitle'] = state.openFormButton;
+        }
+
+        return `<!-- wp:give/donation-form ${JSON.stringify(attributes)} /-->`;
+    }
+
+    const getShortcode = () => {
+        const shortcodeAttributes = [];
+
+        const attributes = {
+            id: formId
+        }
+
+        if (isButton) {
+            attributes['display_style'] = state.selectedStyle;
+            attributes['continue_button_title'] = state.openFormButton;
+        }
+
+        for (const key in attributes) {
+            shortcodeAttributes.push(`${key}="${attributes[key]}"`);
+        }
+
+        return `[give_form ${shortcodeAttributes.join(' ')}]`;
+    }
+
+    /**
+     * The snippet is pasted as HTML, so every interpolated attribute value is
+     * encoded. A button label with a quote must not break the markup.
+     *
+     * @since 4.17.0
+     */
+    const attribute = (name: string, value: string | number): string => {
+        const encoded = String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        return `${name}="${encoded}"`;
+    };
+
+    const buttonColor = state.buttonColor || formPrimaryColor;
+
+    /**
+     * The snippet carries only per-embed choices: the form, its title for
+     * assistive tech, and the launcher's display style, label, and color.
+     * Translated default labels travel with the script itself.
+     *
+     * @since 4.17.0
+     */
+    const getExternalEmbedSnippet = () => {
+        const attributes = [attribute('form-id', formId)];
+
+        // The iframe title and modal label; the form's own title beats the generic default.
+        if (parsedSettings.formTitle) {
+            attributes.push(attribute('form-title', parsedSettings.formTitle));
+        }
+
+        // Default labels travel with the script in the site's locale (see
+        // GetExternalEmbedScriptData); only admin choices are written out.
+        if (isButton) {
+            attributes.push(attribute('display-style', state.selectedStyle));
+            if (state.openFormButton) {
+                attributes.push(attribute('button-text', state.openFormButton));
+            }
+            if (buttonColor) {
+                attributes.push(attribute('primary-color', buttonColor));
+            }
+        }
+
+        return [
+            `<script ${attribute('src', externalEmbedScriptUrl)} defer></script>`,
+            `<givewp-donation-form ${attributes.join(' ')}></givewp-donation-form>`,
+        ].join('\n');
+    };
+
+    /**
+     * Both copy buttons go through the WordPress clipboard hook, which reads
+     * the text on click and only reports success once the copy actually landed.
+     *
+     * @since 4.17.0
+     */
+    const copyShortcodeRef = useCopyToClipboard(getShortcode, () => {
+        setState((prevState) => ({...prevState, isCopied: true}));
+        setTimeout(() => setState((prevState) => ({...prevState, isCopied: false})), 2000);
+    });
+
+    const copyExternalEmbedRef = useCopyToClipboard(getExternalEmbedSnippet, () => {
+        setIsExternalEmbedCopied(true);
+        setTimeout(() => setIsExternalEmbedCopied(false), 2000);
+    });
+
+    /**
+     * Handle inserting form into existing post/page
+     */
+    const handleInsert = async () => {
+
+        if (isButton && !state.openFormButton) {
+            openFormBtnRef.current?.focus();
+            return;
+        }
+
+        if (!state.selectedPost) {
+            setState(prevState => {
+                return {
+                    ...prevState,
+                    insertPageNotSelected: true,
+                };
+            });
+
+            return;
+        }
+
+        setState(prevState => {
+            return {
+                ...prevState,
+                isInserting: true,
+            };
+        });
+
+        const content = state?.posts[state.insertPostType]?.find((page) => page.value == state.selectedPost)?.content + getBlockComment();
+
+        await editEntityRecord('postType', state.insertPostType, state.selectedPost, {content});
+        const response = await saveEditedEntityRecord('postType', state.insertPostType, state.selectedPost, {content});
+
+        setState(prevState => {
+            return {
+                ...prevState,
+                isInserting: false,
+                insertPageNotSelected: false,
+                isInserted: true,
+                insertedLink: response?.link,
+            };
+        });
+    };
+
+    /**
+     * Handle creating a new post/page
+     */
+    const handleCreateNew = async () => {
+        if (!state.newPostName) {
+            newPostNameRef.current?.focus();
+            return;
+        }
+
+        if (isButton && !state.openFormButton) {
+            openFormBtnRef.current?.focus();
+            return;
+        }
+
+        setState(prevState => {
+            return {
+                ...prevState,
+                isCreating: true,
+            };
+        });
+
+        const response = await saveEntityRecord('postType', state.createPostType, {
+            title: state.newPostName,
+            content: getBlockComment(),
+        });
+
+        setState(prevState => {
+            return {
+                ...prevState,
+                isCreating: false,
+                isCreated: true,
+                createdLink: response?.link,
+            };
+        });
+    };
+
+    const getContentType = type => {
+        return type === 'page'
+            ? __('page', 'give')
+            : __('post', 'give');
+    }
+
+    /*
+     * The builder's Popover.Slot lives inside the block editor, far below this
+     * panel's z-index, so a color picker opened from here would render behind
+     * the panel. Popovers from this panel go to a sibling slot at the same
+     * z-index instead. The slot-name provider is the documented way to pick a
+     * slot, but it is not in the components' type definitions.
+     */
+    // @ts-expect-error __unstableSlotNameProvider is missing from the Popover types.
+    const PopoverSlotName = Popover.__unstableSlotNameProvider;
+
+    return createPortal(
+        <PopoverSlotName value="give-embed-modal">
+        <div className="give-embed-modal">
+
+            <div className="give-embed-modal-header">
+                {__('Embed Form', 'give')}
+
+                <span className="give-embed-modal-badge">
+                    {__('Form ID', 'give')}: {formId}
+                </span>
+
+                <button
+                    aria-label={__('Close Embed Form modal window', 'give')}
+                    onClick={handleClose}
+                >
+                    <ExitIcon />
+                </button>
+            </div>
+
+            <TabPanel
+                className="give-embed-modal-tabs"
+                tabs={[
+                    {name: 'internal', title: __('This site', 'give')},
+                    {name: 'external', title: __('External website', 'give')},
+                ]}
+            >
+                {(tab) => tab.name === 'external' ? (
+                    <>
+                        <div className="give-embed-modal-row">
+                            <strong>
+                                {__('Embed on an external website', 'give')}
+                            </strong>
+
+                            <div className="give-embed-modal-helptext">
+                                {__('Copy and paste this snippet into any other website to display this donation form there.', 'give')}
+                            </div>
+
+                            <SelectControl
+                                label={__('Display style', 'give')}
+                                value={state.selectedStyle}
+                                options={displayStyles}
+                                onChange={value => setState(prevState => {
+                                    return {
+                                        ...prevState,
+                                        selectedStyle: value,
+                                    };
+                                })}
+                                help={getStyleDescription()}
+                            />
+
+                            {isButton && (
+                                <>
+                                    <TextControl
+                                        placeholder={__('Donate', 'give')}
+                                        label={__('Button label', 'give')}
+                                        value={state.openFormButton}
+                                        onChange={value => setState(prevState => {
+                                            return {
+                                                ...prevState,
+                                                openFormButton: value,
+                                            };
+                                        })}
+                                    />
+
+                                    {/* Same control as the Design tab's Primary Color, so it looks and works the same. */}
+                                    <PanelColorSettings
+                                        className="give-embed-modal-color"
+                                        colorSettings={[
+                                            {
+                                                value: buttonColor,
+                                                onChange: (value: string) =>
+                                                    setState((prevState) => ({...prevState, buttonColor: value ?? ''})),
+                                                label: __('Button color', 'give'),
+                                                disableCustomColors: false,
+                                                colors: defaultColors,
+                                            },
+                                        ]}
+                                    />
+
+                                    <div className="give-embed-modal-helptext">
+                                        {__('The button is part of the other website, so it keeps this color until the snippet is updated. The form itself always uses its current design.', 'give')}
+                                    </div>
+                                </>
+                            )}
+
+                            {hasConfirmationRedirect && (
+                                <div className="give-embed-modal-helptext">
+                                    {__('This form has "Confirmation Page Redirect" enabled in its settings, so donors will leave the site the form is embedded on after donating.', 'give')}
+                                </div>
+                            )}
+
+                            <pre className="give-embed-modal-code" tabIndex={0} aria-label={__('Embed code', 'give')}>
+                                <code>{getExternalEmbedSnippet()}</code>
+                            </pre>
+
+                            <div className="give-embed-modal-items give-embed-modal-copy">
+                                <div>
+                                    <Button
+                                        icon={isExternalEmbedCopied ? CheckIcon : CopyIcon}
+                                        variant="secondary"
+                                        ref={copyExternalEmbedRef}
+                                    >
+                                        {isExternalEmbedCopied ? __('Copied', 'give') : __('Copy Embed Code', 'give')}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+            <div className="give-embed-modal-row">
+
+                <strong>
+                    {__('Form settings', 'give')}
+                </strong>
+
+                <SelectControl
+                    label={__('Display style', 'give')}
+                    value={state.selectedStyle}
+                    options={displayStyles}
+                    onChange={value => setState(prevState => {
+                        return {
+                            ...prevState,
+                            selectedStyle: value,
+                        };
+                    })}
+                    help={getStyleDescription()}
+                />
+
+                {isButton && (
+                    <TextControl
+                        ref={openFormBtnRef}
+                        placeholder={__('Donate', 'give')}
+                        label={__('Button label', 'give')}
+                        value={state.openFormButton}
+                        onChange={value => setState(prevState => {
+                            return {
+                                ...prevState,
+                                openFormButton: value,
+                            };
+                        })}
+                    />
+                )}
+
+            </div>
+
+            <div className="give-embed-modal-row">
+
+                <strong>
+                    {__('Add to existing content', 'give')}
+                </strong>
+
+                <RadioControl
+                    className="give-embed-modal-radio"
+                    selected={state.insertPostType}
+                    options={postOptions}
+                    onChange={value => setState(prevState => {
+                        return {
+                            ...prevState,
+                            insertPostType: value,
+                            currentPostType: value,
+                            selectedPost: '',
+                            isInserted: false,
+                        };
+                    })}
+                />
+
+                <SelectControl
+                    value={state.selectedPost}
+                    options={getPostsList()}
+                    disabled={state.isInserted}
+                    help={state.insertPageNotSelected
+                        ? <p className="give-embed-modal-select-error">
+                            {sprintf(
+                                __('Please select a %s', 'give'),
+                                getContentType(state.insertPostType)
+                            )}
+                        </p>
+                        : null
+                    }
+                    onChange={value => setState(prevState => {
+                        return {
+                            ...prevState,
+                            insertPageNotSelected: false,
+                            selectedPost: value,
+                        };
+                    })}
+                />
+
+                {state.isInserted ? (
+                    <div className="give-embed-modal-items">
+                        <div>
+                            <Button
+                                icon={CheckIcon}
+                                variant="secondary"
+                                onClick={() => viewInsertedPageBtnRef.current?.focus()}
+                            >
+                                {__('Form inserted', 'give')}
+                            </Button>
+                        </div>
+                        <div>
+                            <Button
+                                ref={viewInsertedPageBtnRef}
+                                href={state.insertedLink}
+                                target="_blank"
+                                icon={external}
+                                variant="tertiary"
+                            >
+                                {sprintf(
+                                    __('View %s', 'give'),
+                                    getContentType(state.insertPostType)
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <Button
+                        variant="secondary"
+                        onClick={handleInsert}
+                    >
+                        {state.isInserting && <Spinner />}
+                        {state.isInserting
+                            ? __('Inserting form', 'give')
+                            : __('Insert form', 'give')}
+                    </Button>
+                )}
+
+            </div>
+
+            <div className="give-embed-modal-row">
+
+                <strong>
+                    {__('Create new', 'give')}
+                </strong>
+
+                <RadioControl
+                    className="give-embed-modal-radio"
+                    selected={state.createPostType}
+                    options={postOptions}
+                    onChange={value => setState(prevState => {
+                        return {
+                            ...prevState,
+                            createPostType: value,
+                            currentPostType: value,
+                            isCreated: false,
+                        };
+                    })}
+                />
+
+                <TextControl
+                    readOnly={state.isCreated}
+                    ref={newPostNameRef}
+                    value={state.newPostName}
+                    onChange={value => setState(prevState => {
+                        return {
+                            ...prevState,
+                            newPostName: value,
+                        };
+                    })}
+                    className={cx({'give-embed-modal-input-error': isPageAlreadyCreated})}
+                    help={isPageAlreadyCreated
+                        ? <p className="give-embed-modal-select-error">
+                            {sprintf(
+                                __('%s with that name already exists', 'give'),
+                                getContentType(state.createPostType))}
+                        </p>
+                        : null
+                    }
+                />
+
+                {state.isCreated ? (
+                    <div className="give-embed-modal-items">
+                        <div>
+                            <Button
+                                icon={CheckIcon}
+                                variant="secondary"
+                                onClick={() => viewCreatedPageBtnRef.current?.focus()}
+                            >
+                                {__('Created page', 'give')}
+                            </Button>
+                        </div>
+                        <div>
+                            <Button
+                                ref={viewCreatedPageBtnRef}
+                                href={state.createdLink}
+                                target="_blank"
+                                icon={external}
+                                variant="tertiary"
+                            >
+                                {sprintf(
+                                    __('View %s', 'give'),
+                                    getContentType(state.createPostType)
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {!isPageAlreadyCreated && (
+                            <Button
+                                variant="secondary"
+                                onClick={handleCreateNew}
+                            >
+                                {state.isCreating && <Spinner />}
+                                {state.isCreating
+                                    ? sprintf(
+                                        __('Creating %s', 'give'),
+                                        getContentType(state.createPostType)
+                                    )
+                                    : __('Create', 'give')}
+                            </Button>
+                        )}
+                    </>
+                )}
+
+            </div>
+
+            <div className="give-embed-modal-row">
+                <strong>
+                    {__('Not using the block editor?', 'give')}
+                </strong>
+
+                <div className="give-embed-modal-helptext">
+                    {__('Copy and paste the shortcode within your page builder.', 'give')}
+                </div>
+
+                <div className="give-embed-modal-items give-embed-modal-copy">
+                    <div>
+                        <Button
+                            icon={state.isCopied ? CheckIcon : CopyIcon}
+                            variant="secondary"
+                            ref={copyShortcodeRef}
+                        >
+                            {state.isCopied ? __('Copied', 'give') : __('Copy Shortcode', 'give')}
+                        </Button>
+                    </div>
+                    <div>
+                        <Interweave
+                            content={sprintf(
+                                __('%s about the shortcode', 'give'),
+                                `<a href="https://givewp.com/documentation/core/shortcodes/" target="_blank">${__('Learn more', 'give')}</a>`,
+                            )}
+                        />
+                    </div>
+                </div>
+            </div>
+
+                    </>
+                )}
+            </TabPanel>
+        </div>
+        <div className="give-embed-modal-popovers">
+            {/* @ts-ignore Popover.Slot is missing from the components' types, as in BlockEditorContainer. */}
+            <Popover.Slot name="give-embed-modal" />
+        </div>
+        </PopoverSlotName>,
+        document.body,
+    );
+}

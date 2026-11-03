@@ -1,0 +1,52 @@
+[
+    {
+        "id": 1,
+        "image": "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=800&q=80",
+        "alt": "Youth Tennis Coaching",
+        "badge": "Athletic Coaching",
+        "title": "Youth Tennis Coaching",
+        "desc": "Experienced instructors deliver structured, age-appropriate tennis training designed to build athletic agility, court stamina, self-discipline, and enduring confidence for every young player.",
+        "link": "/Ggani_Foundation/contact/",
+        "action_text": "Enroll in Coaching Clinics"
+    },
+    {
+        "id": 2,
+        "image": "https://images.unsplash.com/photo-1542144582-1ba00456b5e3?auto=format&fit=crop&w=800&q=80",
+        "alt": "Equipment Donations",
+        "badge": "Gear Access &amp; Equity",
+        "title": "Equipment Donations",
+        "desc": "We collect, inspect, and distribute premium tennis rackets, fresh balls, athletic apparel, and court shoes, eliminating financial barriers so every child is fully equipped to play.",
+        "link": "/Ggani_Foundation/contact/",
+        "action_text": "Donate Tennis Gear"
+    },
+    {
+        "id": 3,
+        "image": "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=800&q=80",
+        "alt": "Community Tournaments",
+        "badge": "Competitive Experience",
+        "title": "Community Tournaments",
+        "desc": "We organize inclusive youth tournaments and weekend exhibition clinics that bring families together, celebrate athletic milestones, and instill respect, resilience, and fair play.",
+        "link": "/Ggani_Foundation/contact/",
+        "action_text": "View Tournament Events"
+    },
+    {
+        "id": 4,
+        "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80",
+        "alt": "Academic Mentorship",
+        "badge": "Scholastic Tutoring",
+        "title": "Academic &amp; Life Mentorship",
+        "desc": "Tennis is our vehicle for life achievement. Dedicated volunteer mentors provide weekly classroom tutoring, college preparation, and personal character-building sessions.",
+        "link": "/Ggani_Foundation/contact/",
+        "action_text": "Learn About Mentorship"
+    },
+    {
+        "id": 5,
+        "image": "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80",
+        "alt": "Volunteer Opportunities",
+        "badge": "Community Service",
+        "title": "Volunteer &amp; Coach Outreach",
+        "desc": "Join our passionate volunteer network as a guest tennis instructor, clinic assistant, event coordinator, or academic tutor to directly inspire the next generation of youth champions.",
+        "link": "/Ggani_Foundation/contact/",
+        "action_text": "Become a Volunteer"
+    }
+]

@@ -1,0 +1,29 @@
+{
+    "impact": {
+        "stat1_val": "500+",
+        "stat1_lbl": "Youth Trained & Mentored",
+        "stat2_val": "1,200+",
+        "stat2_lbl": "Free Tennis Lessons Given",
+        "stat3_val": "450+",
+        "stat3_lbl": "Rackets & Gear Distributed",
+        "stat4_val": "12",
+        "stat4_lbl": "Communities & Schools Served"
+    },
+    "announcement": {
+        "enabled": "0",
+        "text": "Registration is now open for our upcoming Youth Tennis Clinics & Tournaments!",
+        "btn_text": "Register Now",
+        "btn_url": "/Ggani_Foundation/contact/"
+    },
+    "contact": {
+        "address_line1": "101 Simply Country Ln",
+        "address_line2": "Lillington, NC 27546, United States",
+        "maps_url": "https://www.google.com/maps/search/?api=1&query=101+Simply+Country+Ln+Lillington+NC+27546",
+        "phone": "+1 (919) 555-0199",
+        "email": "info@gganifoundation.org",
+        "hours": "Mon - Sat: 8:00 AM - 6:00 PM EST",
+        "facebook": "https://facebook.com",
+        "instagram": "https://instagram.com",
+        "twitter": "https://x.com"
+    }
+}

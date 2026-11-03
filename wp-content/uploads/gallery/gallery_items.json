@@ -1,0 +1,66 @@
+[
+    {
+        "id": 101,
+        "title": "The Ganiyu Adelekan Foundation Tournament",
+        "category": "tournaments",
+        "category_label": "Tournaments",
+        "desc": "Dozens of youth participants proudly showcasing their tennis rackets and tournament medals under our official foundation banner.",
+        "url": "http://localhost/Ggani_Foundation/wp-content/uploads/gallery/foundation_tournament_group.jpg"
+    },
+    {
+        "id": 102,
+        "title": "Foundation Coaching & Leadership Team",
+        "category": "coaching",
+        "category_label": "Tennis Clinics",
+        "desc": "Our dedicated team of coaches and staff preparing tournament rackets and mentoring players on the court.",
+        "url": "http://localhost/Ggani_Foundation/wp-content/uploads/gallery/coaches_mentorship_team.jpg"
+    },
+    {
+        "id": 103,
+        "title": "Tournament Rackets & Championship Trophies",
+        "category": "equipment",
+        "category_label": "Equipment Access",
+        "desc": "Stacks of high-performance tennis rackets and trophies prepared for distribution to youth participants.",
+        "url": "http://localhost/Ggani_Foundation/wp-content/uploads/gallery/tennis_rackets_trophies.jpg"
+    },
+    {
+        "id": 104,
+        "title": "Tennis Footwear & Gear Distribution",
+        "category": "equipment",
+        "category_label": "Equipment Access",
+        "desc": "Quality tennis shoes and athletic gear sorted and gifted to eliminate financial barriers for young players.",
+        "url": "http://localhost/Ggani_Foundation/wp-content/uploads/gallery/tennis_shoes_equipment_drive.jpg"
+    },
+    {
+        "id": 105,
+        "title": "Clinic Participants & Court Grandstand",
+        "category": "community",
+        "category_label": "Community Events",
+        "desc": "Young athletes, parents, and community members gathered in the stadium bleachers during tournament day.",
+        "url": "http://localhost/Ggani_Foundation/wp-content/uploads/gallery/youth_participants_bleachers.jpg"
+    },
+    {
+        "id": 106,
+        "title": "Serving Practice & Youth Drills",
+        "category": "coaching",
+        "category_label": "Tennis Clinics",
+        "desc": "One-on-one coaching for technique, posture, and athletic confidence.",
+        "url": "http://localhost/Ggani_Foundation/wp-content/uploads/2025/05/tennis-boy.jpg"
+    },
+    {
+        "id": 107,
+        "title": "Camaraderie & Teamwork",
+        "category": "mentorship",
+        "category_label": "Youth Mentorship",
+        "desc": "Fostering lifelong friendships, discipline, and mutual encouragement through tennis.",
+        "url": "http://localhost/Ggani_Foundation/wp-content/uploads/2025/05/pexels-photo-9654724.jpeg"
+    },
+    {
+        "id": 108,
+        "title": "Junior Group Coordination & Agility",
+        "category": "coaching",
+        "category_label": "Tennis Clinics",
+        "desc": "Dynamic group drills building hand-eye coordination and court movement.",
+        "url": "http://localhost/Ggani_Foundation/wp-content/uploads/2025/05/pexels-photo-8223993.jpeg"
+    }
+]

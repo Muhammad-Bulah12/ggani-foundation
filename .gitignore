@@ -1,0 +1,19 @@
+# Logs and cache
+error_log
+*.log
+.htaccess.nfd-backup
+find_8ecd.php
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Compressed backups
+*.sql.gz
+*.tar.gz
+*.zip
+
+# History & system folders
+.codex-history/
+.well-known/
