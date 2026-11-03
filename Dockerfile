@@ -1,7 +1,8 @@
 FROM php:8.2-apache
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache mod_rewrite and AllowOverride All for WordPress .htaccess permalinks
+RUN a2enmod rewrite \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 # Install required PHP extensions for WordPress (gd, mysqli, pdo, pdo_mysql, zip, opcache)
 RUN apt-get update && apt-get install -y \
@@ -29,9 +30,10 @@ RUN { \
 
 WORKDIR /var/www/html
 
-# Copy entrypoint
+# Copy entrypoint and ensure Unix LF line endings
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Copy application files
 COPY . /var/www/html/

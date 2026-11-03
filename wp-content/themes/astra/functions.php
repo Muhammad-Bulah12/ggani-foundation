@@ -233,3 +233,19 @@ add_action('astra_header_before', function() {
     }
 });
 
+/**
+ * Rewrite hardcoded local paths (/Ggani_Foundation) when running in production (e.g. Render)
+ */
+if ( defined('DB_HOST') && DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1' ) {
+    add_action('template_redirect', function() {
+        ob_start(function($buffer) {
+            $home = rtrim(home_url(), '/');
+            $buffer = str_replace('http://localhost/Ggani_Foundation', $home, $buffer);
+            $buffer = str_replace('https://localhost/Ggani_Foundation', $home, $buffer);
+            $buffer = str_replace('/Ggani_Foundation/', '/', $buffer);
+            return $buffer;
+        });
+    });
+}
+
+

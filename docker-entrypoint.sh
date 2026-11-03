@@ -7,7 +7,9 @@ if [ -n "$PORT" ]; then
     sed -i "s/:80/:$PORT/" /etc/apache2/sites-available/000-default.conf
 fi
 
-# Ensure correct permissions on uploads
+# Ensure correct permissions on uploads and clear local static page cache
+rm -rf /var/www/html/wp-content/endurance-page-cache/* 2>/dev/null || true
+ln -sfn /var/www/html /var/www/html/Ggani_Foundation 2>/dev/null || true
 chown -R www-data:www-data /var/www/html/wp-content/uploads /var/www/html/admin 2>/dev/null || true
 
 # Adapt .htaccess for container root path and standard Apache mod_php
