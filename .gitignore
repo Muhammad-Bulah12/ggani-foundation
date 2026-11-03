@@ -3,6 +3,7 @@ error_log
 *.log
 .htaccess.nfd-backup
 find_8ecd.php
+wp-content/endurance-page-cache/
 
 # OS files
 .DS_Store
