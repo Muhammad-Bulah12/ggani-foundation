@@ -239,9 +239,48 @@ add_action('astra_header_before', function() {
 add_action('template_redirect', function() {
     ob_start(function($buffer) {
         $donateUrl = 'https://www.zeffy.com/en-US/donation-form/donate-to-make-a-difference-21491';
+        $homeBase = rtrim(home_url(), '/');
+        $logoWhiteUrl = $homeBase . '/wp-content/uploads/ggani-logo-white.png';
+        $faviconUrl = $homeBase . '/wp-content/uploads/ggani-favicon.png';
 
-        // Inject polished Header & Hero layout styles before </head>
-        $headerStyles = '<style id="ggani-header-enhancement-css">
+        // Inject favicon & polished Header/Logo/Hero layout styles before </head>
+        $headerStyles = '<link rel="icon" type="image/png" href="' . $faviconUrl . '" />
+        <link rel="apple-touch-icon" href="' . $faviconUrl . '" />
+        <style id="ggani-header-enhancement-css">
+            .site-branding .site-title a {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+                text-decoration: none !important;
+            }
+            .ggani-logo-badge {
+                width: 44px;
+                height: 44px;
+                background: #151716;
+                border-radius: 10px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 4px;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14);
+                flex-shrink: 0;
+            }
+            .ggani-logo-badge img {
+                height: 36px !important;
+                width: auto !important;
+                object-fit: contain !important;
+                display: block !important;
+            }
+            @media (max-width: 921px) {
+                .ggani-logo-badge {
+                    width: 38px;
+                    height: 38px;
+                    border-radius: 8px;
+                }
+                .ggani-logo-badge img {
+                    height: 30px !important;
+                }
+            }
             @media (min-width: 922px) {
                 #ast-desktop-header .ast-primary-header-bar {
                     min-height: 78px !important;
@@ -341,6 +380,20 @@ add_action('template_redirect', function() {
             }
         </style>';
         $buffer = str_replace('</head>', $headerStyles . "\n</head>", $buffer);
+
+        // Add Foundation Logo to Header Site Title (Desktop & Mobile) and Footer
+        $logoBadgeHtml = '<span class="ggani-logo-badge"><img src="' . $logoWhiteUrl . '" alt="Ganiyu Adelekan Foundation Logo" /></span><span>Ganiyu Adelekan Foundation</span>';
+        $buffer = preg_replace(
+            '/(<span class="site-title"[^>]*>\s*<a[^>]*>)\s*Ganiyu Adelekan Foundation\s*(<\/a>\s*<\/span>)/s',
+            '${1}' . $logoBadgeHtml . '${2}',
+            $buffer
+        );
+        $footerLogoHtml = '<div style="margin-bottom: 14px;"><img src="' . $logoWhiteUrl . '" alt="Ganiyu Adelekan Foundation Logo" style="height: 54px; width: auto; display: block;" /></div><h3 class="uagb-heading-text">About Us</h3>';
+        $buffer = str_replace(
+            '<div class="wp-block-uagb-advanced-heading uagb-block-ddf47555"><h3 class="uagb-heading-text">About Us</h3>',
+            '<div class="wp-block-uagb-advanced-heading uagb-block-ddf47555">' . $footerLogoHtml,
+            $buffer
+        );
 
         // Replace duplicate testimonial avatar image for Tom Carter with an Unsplash portrait
         $tomUnsplashImg = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80';

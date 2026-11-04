@@ -471,6 +471,7 @@ if (!empty($_SESSION['ggani_admin_logged'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Foundation Control Center &bull; Ganiyu Adelekan Foundation</title>
+  <link rel="icon" type="image/png" href="../wp-content/uploads/ggani-favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -883,7 +884,7 @@ if (!empty($_SESSION['ggani_admin_logged'])) {
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
-        <div class="brand-icon">🎾</div>
+        <div class="brand-icon" style="background: #151716; padding: 6px;"><img src="../wp-content/uploads/ggani-logo-white.png" alt="Ganiyu Adelekan Foundation Logo" style="height: 100%; width: auto; object-fit: contain;"></div>
         <h2>Foundation Admin Center</h2>
         <p>Log in to manage gallery photos, programs, impact statistics, and announcements.</p>
       </div>
@@ -913,14 +914,14 @@ if (!empty($_SESSION['ggani_admin_logged'])) {
   <!-- AUTHENTICATED ADMIN DASHBOARD -->
   <header>
     <div class="brand-group">
-      <div class="brand-icon">🎾</div>
+      <div class="brand-icon" style="background: #151716; padding: 5px;"><img src="../wp-content/uploads/ggani-logo-white.png" alt="Ganiyu Adelekan Foundation Logo" style="height: 100%; width: auto; object-fit: contain;"></div>
       <div class="brand-text">
         <h1>Foundation Control Center</h1>
         <p>Logged in as: <strong><?= htmlspecialchars($_SESSION['ggani_admin_user'] ?? 'Admin') ?></strong></p>
       </div>
     </div>
     <div class="header-actions">
-      <a href="/Ggani_Foundation/" target="_blank" class="btn btn-secondary">
+      <a href="../" target="_blank" class="btn btn-secondary">
         <span>🌐 View Live Site</span>
       </a>
       <a href="?action=logout" class="btn btn-danger">
