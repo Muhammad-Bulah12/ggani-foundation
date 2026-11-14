@@ -453,7 +453,25 @@ add_action('template_redirect', function() {
             $buffer
         );
 
-        // 7. Rewrite hardcoded local paths (/Ggani_Foundation) when running in production (e.g. Render)
+        // 7. Footer organization description
+        $buffer = str_replace(
+            'Ggani Foundation is committed to transforming lives through tennis, empowering children to achieve their full potential.',
+            'Ganiyu Adelekan Foundation is committed to transforming lives through tennis, empowering children to achieve their full potential.',
+            $buffer
+        );
+
+        // 8. Remove any academic/education references
+        $buffer = str_replace('through sports, education, and mentorship', 'through sports, athletic development, and mentorship', $buffer);
+        $buffer = str_replace('academic mentorship', 'personal mentorship', $buffer);
+        $buffer = str_replace('Transforming Lives Through Tennis &amp; Education', 'Transforming Lives Through Tennis &amp; Sportsmanship', $buffer);
+        $buffer = str_replace('Transforming Lives Through Tennis & Education', 'Transforming Lives Through Tennis & Sportsmanship', $buffer);
+        $buffer = str_replace('scholastic tutoring, and community mentorship', 'and community mentorship', $buffer);
+        $buffer = str_replace('academic guidance, and character development', 'and character development', $buffer);
+        $buffer = str_replace(', or academic tutor', '', $buffer);
+        $buffer = str_replace('court coaching, and scholastic guidance', 'court coaching, and personal mentorship', $buffer);
+        $buffer = str_replace('distributions, and academic mentorship', 'distributions, and youth mentorship', $buffer);
+
+        // 9. Rewrite hardcoded local paths (/Ggani_Foundation) when running in production (e.g. Render)
         if ( defined('DB_HOST') && DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1' ) {
             $home = rtrim(home_url(), '/');
             $buffer = str_replace('http://localhost/Ggani_Foundation', $home, $buffer);
