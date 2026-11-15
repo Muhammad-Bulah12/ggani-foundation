@@ -238,7 +238,8 @@ add_action('astra_header_before', function() {
  */
 add_action('template_redirect', function() {
     ob_start(function($buffer) {
-        $donateUrl = 'https://www.zeffy.com/en-US/donation-form/donate-to-make-a-difference-21491';
+        $donateUrl = rtrim(home_url(), '/') . '/donate/';
+        $buffer = str_replace(array('Ggani Foundation', 'Ganiyu Adekekan Foundation'), 'Ganiyu Adelekan Foundation', $buffer);
         $homeBase = rtrim(home_url(), '/');
         $logoWhiteUrl = $homeBase . '/wp-content/uploads/ggani-logo-white.png';
         $faviconUrl = $homeBase . '/wp-content/uploads/ggani-favicon.png';
@@ -404,7 +405,7 @@ add_action('template_redirect', function() {
         );
 
         // 1. Desktop Header: Add "Donate" button alongside "Get Involved"
-        $headerDonateBtn = '<div class="ast-builder-layout-element ast-flex site-header-focus-item ast-header-button-donate"><div class="ast-builder-button-wrap"><a class="ast-custom-button-link" href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" role="button" aria-label="Donate"><div class="ast-custom-button" style="background-color: #377A00; border-color: #377A00; color: #ffffff; box-shadow: 0 4px 12px rgba(55, 122, 0, 0.25);">❤ Donate</div></a></div></div>';
+        $headerDonateBtn = '<div class="ast-builder-layout-element ast-flex site-header-focus-item ast-header-button-donate"><div class="ast-builder-button-wrap"><a class="ast-custom-button-link" href="' . $donateUrl . '" role="button" aria-label="Donate"><div class="ast-custom-button" style="background-color: #377A00; border-color: #377A00; color: #ffffff; box-shadow: 0 4px 12px rgba(55, 122, 0, 0.25);">❤ Donate</div></a></div></div>';
         $buffer = preg_replace(
             '/(<div class="ast-builder-layout-element[^>]*ast-header-button-1"[^>]*>.*?<\/div>\s*<\/div>)/s',
             '$1' . $headerDonateBtn,
@@ -413,12 +414,12 @@ add_action('template_redirect', function() {
         );
 
         // 2. Mobile Menu & Footer Menu: Append "Donate" link
-        $mobileDonateItem = '<li class="menu-item"><a href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" class="menu-link" style="color: #377A00; font-weight: 700;">❤ Donate</a></li></ul>';
+        $mobileDonateItem = '<li class="menu-item"><a href="' . $donateUrl . '" class="menu-link" style="color: #377A00; font-weight: 700;">❤ Donate</a></li></ul>';
         $buffer = preg_replace('/(<ul id="ast-hf-mobile-menu"[^>]*>.*?)<\/ul>/s', '$1' . $mobileDonateItem, $buffer, 1);
         $buffer = preg_replace('/(<ul id="astra-footer-menu"[^>]*>.*?)<\/ul>/s', '$1' . $mobileDonateItem, $buffer, 1);
 
         // 3. Homepage Hero Section: Add "Donate Now" button beside "Get Involved"
-        $heroDonateBtn = '</a> <a href="' . $donateUrl . '" class="uagb-infobox-cta-link wp-block-button__link" target="_blank" rel="noopener noreferrer" style="background-color: #ffffff; color: #012104; border-color: #ffffff;"><span class="uagb-inline-editing">❤ Donate Now</span></a>';
+        $heroDonateBtn = '</a> <a href="' . $donateUrl . '" class="uagb-infobox-cta-link wp-block-button__link" style="background-color: #ffffff; color: #012104; border-color: #ffffff;"><span class="uagb-inline-editing">❤ Donate Now</span></a>';
         $buffer = str_replace(
             '<span class="uagb-inline-editing">Get Involved</span></a>',
             '<span class="uagb-inline-editing">Get Involved</span>' . $heroDonateBtn,
@@ -426,7 +427,7 @@ add_action('template_redirect', function() {
         );
 
         // 4. Global Above-Footer Call-To-Action: Add "Donate Now" button beside "Get Involved"
-        $footerCtaDonateBtn = 'Get Involved</a> <a href="' . $donateUrl . '" class="uagb-cta__button-link-wrapper wp-block-button__link" target="_blank" rel="noopener noreferrer" style="margin-left: 12px; background-color: #ffffff; color: #012104; border-color: #ffffff;">❤ Donate Now</a>';
+        $footerCtaDonateBtn = 'Get Involved</a> <a href="' . $donateUrl . '" class="uagb-cta__button-link-wrapper wp-block-button__link" style="margin-left: 12px; background-color: #ffffff; color: #012104; border-color: #ffffff;">❤ Donate Now</a>';
         $buffer = preg_replace(
             '/Get Involved<\/a>(<\/div><\/div>\s*<\/div><\/div>\s*<\/section>)/',
             $footerCtaDonateBtn . '$1',
@@ -436,17 +437,17 @@ add_action('template_redirect', function() {
         // 5. Programs Page ("Support & Donate") & Contact Page ("Get Involved & Donate Today")
         $buffer = preg_replace(
             '/<a href="[^"]*"([^>]*)>\s*<span>Support &amp; Donate<\/span>\s*<\/a>/',
-            '<a href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer"$1><span>❤ Support &amp; Donate</span></a>',
+            '<a href="' . $donateUrl . '"$1><span>❤ Support &amp; Donate</span></a>',
             $buffer
         );
         $buffer = preg_replace(
             '/<a href="[^"]*"([^>]*)>\s*<span>Get Involved &amp; Donate Today<\/span>/',
-            '<a href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer"$1><span>Get Involved &amp; Donate Today</span>',
+            '<a href="' . $donateUrl . '"$1><span>Get Involved &amp; Donate Today</span>',
             $buffer
         );
 
         // 6. Gallery Page CTA Banner: Add "Donate Now" button alongside "Explore Programs"
-        $galleryDonateBtn = '<span>Explore Programs</span></a><a href="' . $donateUrl . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; padding: 15px 34px; background: #ffffff; color: #012104; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(0,0,0,0.2);"><span>❤ Donate Now</span></a>';
+        $galleryDonateBtn = '<span>Explore Programs</span></a><a href="' . $donateUrl . '" style="display: inline-flex; align-items: center; gap: 8px; padding: 15px 34px; background: #ffffff; color: #012104; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(0,0,0,0.2);"><span>❤ Donate Now</span></a>';
         $buffer = preg_replace(
             '/<span>Explore Programs<\/span>\s*<\/a>/',
             $galleryDonateBtn,

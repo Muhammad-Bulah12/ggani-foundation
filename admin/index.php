@@ -290,11 +290,10 @@ if (!empty($_SESSION['ggani_admin_logged'])) {
 
     if (isset($_POST['action']) && $_POST['action'] === 'gallery_upload') {
         $title = trim($_POST['title'] ?? '');
-        $category = trim($_POST['category'] ?? 'coaching');
+        $category = trim($_POST['category'] ?? 'tournaments');
         $desc = trim($_POST['desc'] ?? '');
 
         $categoryLabels = [
-            'coaching' => 'Tennis Clinics',
             'tournaments' => 'Tournaments',
             'equipment' => 'Equipment Access',
             'mentorship' => 'Youth Mentorship',
@@ -988,7 +987,6 @@ if (!empty($_SESSION['ggani_admin_logged'])) {
             <div class="form-group">
               <label class="form-label">Program Category *</label>
               <select name="category" class="form-select">
-                <option value="coaching">Tennis Clinics & Coaching</option>
                 <option value="tournaments">Tournaments & Matches</option>
                 <option value="equipment">Equipment Access & Donations</option>
                 <option value="mentorship">Youth Mentorship</option>
