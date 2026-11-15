@@ -240,6 +240,9 @@ add_action('template_redirect', function() {
     ob_start(function($buffer) {
         $donateUrl = rtrim(home_url(), '/') . '/donate/';
         $buffer = str_replace(array('Ggani Foundation', 'Ganiyu Adekekan Foundation'), 'Ganiyu Adelekan Foundation', $buffer);
+        if (strpos($buffer, 'foundation-hero-banner') !== false) {
+            $buffer = preg_replace('/<header class="entry-header[^>]*>.*?<\/header>/s', '', $buffer);
+        }
         $homeBase = rtrim(home_url(), '/');
         $logoWhiteUrl = $homeBase . '/wp-content/uploads/ggani-logo-white.png';
         $faviconUrl = $homeBase . '/wp-content/uploads/ggani-favicon.png';
@@ -378,6 +381,9 @@ add_action('template_redirect', function() {
                 height: 56px !important;
                 object-fit: cover !important;
                 border-radius: 50% !important;
+            .page .entry-header { display: none !important; }
+            .page-id-539 #content .ast-container, .page-id-541 #content .ast-container, body.page #content .ast-container:has(.foundation-hero-banner) { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .page-id-539 #primary, .page-id-541 #primary, body.page #primary:has(.foundation-hero-banner) { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
             }
         </style>';
         $buffer = str_replace('</head>', $headerStyles . "\n</head>", $buffer);
