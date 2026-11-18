@@ -403,6 +403,8 @@ add_action('template_redirect', function() {
         );
 
         // Replace duplicate testimonial avatar image for Tom Carter with an Unsplash portrait
+        $buffer = preg_replace('/https?:\/\/[^"\'\s>,]*pexels-photo-8223993[^"\'\s>,]*/', $homeBase . '/wp-content/uploads/gallery/inspiring_journey_banner.jpg', $buffer);
+        $buffer = str_replace('pexels-photo-8223993', 'Ganiyu Adelekan Foundation', $buffer);
         $tomUnsplashImg = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80';
         $buffer = preg_replace(
             '/(<img[^>]*src=")[^"]*black-girl-150x150\.jpg("[^>]*>\s*<\/div>\s*<\/div>\s*<div class="uagb-testimonial-details">\s*<span class="uagb-tm__author-name">Tom Carter<\/span>)/',
