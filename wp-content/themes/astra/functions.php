@@ -503,6 +503,11 @@ add_action('phpmailer_init', function($phpmailer) {
 });
 
 function ggani_handle_contact() {
+    // Catch PHPMailer errors for debugging if any
+    add_action('wp_mail_failed', function($wp_error) {
+        error_log('wp_mail failed: ' . $wp_error->get_error_message());
+    });
+
     // Honeypot: bots fill this hidden field
     if (!empty($_POST['website'])) {
         wp_send_json_success(array('message' => 'Thank you.'));

@@ -71,8 +71,10 @@ define('NONCE_SALT', '6345ff2fb00a52334bf17d1f27d02216a89b78c2f4a23e67dc700dbc9e
 /**#@-*/
 
 define( 'AUTOMATIC_UPDATER_DISABLED', true );
-define( 'WP_HTTP_BLOCK_EXTERNAL', true );
-define( 'WP_ACCESSIBLE_HOSTS', 'images.unsplash.com' );
+if ( defined('DB_HOST') && DB_HOST === 'localhost' ) {
+    define( 'WP_HTTP_BLOCK_EXTERNAL', true );
+    define( 'WP_ACCESSIBLE_HOSTS', 'images.unsplash.com' );
+}
 @set_time_limit( 300 );
 
 
