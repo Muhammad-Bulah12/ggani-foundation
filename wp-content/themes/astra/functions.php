@@ -475,3 +475,85 @@ add_action('template_redirect', function() {
 });
 
 
+
+
+/**
+ * Ganiyu Adelekan Foundation - Contact form handler (admin-ajax)
+ * Messages are emailed to GGANI_CONTACT_TO (default: ggani.llc@gmail.com).
+ * Optional SMTP is configured through environment variables:
+ * SMTP_HOST, SMTP_PORT (587), SMTP_SECURE (tls), SMTP_USER, SMTP_PASS, SMTP_FROM
+ */
+add_action('phpmailer_init', function($phpmailer) {
+    $host = getenv('SMTP_HOST');
+    if (!$host) return;
+    $phpmailer->isSMTP();
+    $phpmailer->Host = $host;
+    $phpmailer->Port = (int) (getenv('SMTP_PORT') ?: 587);
+    $phpmailer->SMTPSecure = getenv('SMTP_SECURE') ?: 'tls';
+    $user = getenv('SMTP_USER');
+    if ($user) {
+        $phpmailer->SMTPAuth = true;
+        $phpmailer->Username = $user;
+        $phpmailer->Password = getenv('SMTP_PASS') ?: '';
+    }
+    $from = getenv('SMTP_FROM') ?: $user;
+    if ($from) {
+        $phpmailer->setFrom($from, 'Ganiyu Adelekan Foundation', false);
+    }
+});
+
+function ggani_handle_contact() {
+    // Honeypot: bots fill this hidden field
+    if (!empty($_POST['website'])) {
+        wp_send_json_success(array('message' => 'Thank you.'));
+    }
+
+    $name    = sanitize_text_field(wp_unslash($_POST['name'] ?? ''));
+    $email   = sanitize_email(wp_unslash($_POST['email'] ?? ''));
+    $phone   = sanitize_text_field(wp_unslash($_POST['phone'] ?? ''));
+    $subject = sanitize_text_field(wp_unslash($_POST['subject'] ?? 'General Inquiry'));
+    $message = sanitize_textarea_field(wp_unslash($_POST['message'] ?? ''));
+
+    if ($name === '' || $message === '' || !is_email($email)) {
+        wp_send_json_error(array('message' => 'Please enter your name, a valid email address and a message.'), 400);
+    }
+
+    // Simple rate limit: one message per 30 seconds per visitor
+    $ipKey = 'ggani_contact_' . md5($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+    if (get_transient($ipKey)) {
+        wp_send_json_error(array('message' => 'Please wait a moment before sending another message.'), 429);
+    }
+
+    $to = defined('GGANI_CONTACT_TO') ? GGANI_CONTACT_TO : 'ggani.llc@gmail.com';
+
+    $body  = "New message from the Ganiyu Adelekan Foundation website\n\n";
+    $body .= "Name: {$name}\n";
+    $body .= "Email: {$email}\n";
+    $body .= "Phone: " . ($phone !== '' ? $phone : 'Not provided') . "\n";
+    $body .= "Topic: {$subject}\n\n";
+    $body .= "Message:\n{$message}\n";
+
+    $headers = array(
+        'Content-Type: text/plain; charset=UTF-8',
+        'Reply-To: ' . $name . ' <' . $email . '>',
+    );
+
+    $sent = wp_mail($to, '[Website Contact] ' . $subject . ' - ' . $name, $body, $headers);
+
+    if (!$sent) {
+        wp_send_json_error(array('message' => 'Sorry, your message could not be sent right now. Please email us directly at ' . $to . ' or call us.'), 500);
+    }
+
+    set_transient($ipKey, 1, 30);
+
+    // Confirmation email to the sender
+    $confirm  = "Hello {$name},\n\n";
+    $confirm .= "Thank you for contacting the Ganiyu Adelekan Foundation. We have received your message and a member of our team will respond to you shortly.\n\n";
+    $confirm .= "Your message:\n{$message}\n\n";
+    $confirm .= "Ganiyu Adelekan Foundation\n";
+    wp_mail($email, 'We received your message - Ganiyu Adelekan Foundation', $confirm, array('Content-Type: text/plain; charset=UTF-8'));
+
+    wp_send_json_success(array('message' => 'Thank you for reaching out. A member of the Ganiyu Adelekan Foundation team has received your message and will contact you promptly.'));
+}
+add_action('wp_ajax_nopriv_ggani_contact', 'ggani_handle_contact');
+add_action('wp_ajax_ggani_contact', 'ggani_handle_contact');
