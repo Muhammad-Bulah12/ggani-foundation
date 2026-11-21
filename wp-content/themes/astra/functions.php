@@ -503,9 +503,10 @@ add_action('phpmailer_init', function($phpmailer) {
 });
 
 function ggani_handle_contact() {
-    // Catch PHPMailer errors for debugging if any
-    add_action('wp_mail_failed', function($wp_error) {
-        error_log('wp_mail failed: ' . $wp_error->get_error_message());
+    $lastError = '';
+    add_action('wp_mail_failed', function($wp_error) use (&$lastError) {
+        $lastError = $wp_error->get_error_message();
+        error_log('wp_mail failed: ' . $lastError);
     });
 
     // Honeypot: bots fill this hidden field
@@ -546,7 +547,13 @@ function ggani_handle_contact() {
     $sent = wp_mail($to, '[Website Contact] ' . $subject . ' - ' . $name, $body, $headers);
 
     if (!$sent) {
-        wp_send_json_error(array('message' => 'Sorry, your message could not be sent right now. Please email us directly at ' . $to . ' or call us.'), 500);
+        $errMsg = 'Sorry, your message could not be sent right now.';
+        if (!empty($lastError)) {
+            $errMsg .= ' (' . $lastError . ')';
+        } else {
+            $errMsg .= ' Please email us directly at ' . $to . ' or call us.';
+        }
+        wp_send_json_error(array('message' => $errMsg), 500);
     }
 
     set_transient($ipKey, 1, 30);
